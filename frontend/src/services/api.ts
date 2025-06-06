@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create an axios instance with default config
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: 'https://bakery-five-nu.vercel.app/api',
   headers: {
     'Content-Type': 'application/json',
   },
