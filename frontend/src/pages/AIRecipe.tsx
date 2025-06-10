@@ -156,16 +156,19 @@ const AIRecipe: React.FC = () => {
               )}
             </div>
 
-            <Button
-              variant="primary"
-              fullWidth
-              loading={generating}
-              disabled={!dishName.trim() || generating}
-              onClick={handleGenerateRecipe}
-            >
-              <Sparkles size={16} className="mr-2" />
-              Generate Recipe
-            </Button>
+            <div className="relative group rounded-lg overflow-hidden"> {/* Shine effect wrapper */}
+              <Button
+                variant="primary"
+                fullWidth
+                loading={generating}
+                disabled={!dishName.trim() || generating}
+                onClick={handleGenerateRecipe}
+              >
+                <Sparkles size={16} className="mr-2" />
+                Generate Recipe
+              </Button>
+              <span className="absolute top-0 right-0 w-12 h-full bg-white/30 skew-x-[-20deg] transform translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out pointer-events-none"></span>
+            </div>
           </CardBody>
         </Card>
 

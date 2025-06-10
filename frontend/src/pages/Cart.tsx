@@ -46,12 +46,15 @@ const Cart: React.FC = () => {
           <p className="text-gray-500 mb-6">
             You haven't added any items to your cart yet.
           </p>
-          <Button 
-            variant="primary" 
-            onClick={() => navigate('/products')}
-          >
-            Browse Products
-          </Button>
+          <div className="relative inline-block overflow-hidden group rounded-lg"> {/* Shine effect wrapper */}
+            <Button 
+              variant="primary" 
+              onClick={() => navigate('/products')}
+            >
+              Browse Products
+            </Button>
+            <span className="absolute top-0 right-0 w-12 h-full bg-white/20 skew-x-[-20deg] transform translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out pointer-events-none"></span>
+          </div>
         </div>
       </div>
     );

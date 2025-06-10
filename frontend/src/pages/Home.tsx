@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { testimonials } from '../data/testimonials';
 import { productService } from '../services/productService';
 import { Product } from '../types';
@@ -9,9 +10,11 @@ import Button from '../components/ui/Button';
 import { ArrowRight, Cake, Utensils, Award, Clock, Loader } from 'lucide-react';
 
 const Home: React.FC = () => {
+  const [isMounted, setIsMounted] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth(); // PLEASE VERIFY: Assuming 'user' object presence indicates logged-in state
   
   // Fetch products from the backend when component mounts
   useEffect(() => {
@@ -30,13 +33,14 @@ const Home: React.FC = () => {
     };
 
     fetchProducts();
+    setIsMounted(true);
   }, []);
   
   // Get only popular products
   const popularProducts = products.filter(product => product.popular);
   
   return (
-    <div>
+    <div className={`transition-opacity duration-1000 ease-in-out ${isMounted ? 'opacity-100' : 'opacity-0'}`}>
       {/* Hero Section */}
       <section className="relative bg-bread-pattern bg-cover bg-center py-24 md:py-32">
         <div className="absolute inset-0 bg-black bg-opacity-50"></div>
@@ -49,9 +53,12 @@ const Home: React.FC = () => {
               From artisan breads to decadent pastries, we bake fresh daily using only the finest ingredients.
             </p>
             <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
-              <Button size="lg" onClick={() => window.scrollTo({ top: 800, behavior: 'smooth' })}>
-                Explore Our Products
-              </Button>
+              <div className="relative inline-block overflow-hidden group rounded-lg">
+                <Button size="lg" onClick={() => window.scrollTo({ top: 800, behavior: 'smooth' })}>
+                  Explore Our Products
+                </Button>
+                <span className="absolute top-0 right-0 w-12 h-full bg-white/10 skew-x-[-20deg] transform translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out pointer-events-none"></span>
+              </div>
               <Link to="/login">
                 <Button variant="outline" size="lg" className="bg-transparent border-white text-white hover:bg-white hover:text-primary-600">
                   Sign In to Order
@@ -152,15 +159,21 @@ const Home: React.FC = () => {
           <p className="text-primary-100 mb-8 max-w-3xl mx-auto">
             Sign up for an account to place orders, save your favorites, and access our AI recipe generator.
           </p>
-          <Link to="/login">
-            <Button 
-              variant="secondary" 
-              size="lg" 
-              className="text-white font-medium"
-            >
-              Create an Account
-            </Button>
-          </Link>
+          {!user && (
+            <Link to="/login" className="inline-block"> {/* Ensure inline-block for text-center to work */}
+              <div className="relative inline-block overflow-hidden group rounded-lg"> {/* Shine effect wrapper */}
+                <Button 
+                  variant="secondary" 
+                  size="lg" 
+                  className="text-white font-medium"
+                >
+                  Create an Account
+                </Button>
+                {/* Shine element - increased opacity for potentially better visibility */}
+                <span className="absolute top-0 right-0 w-12 h-full bg-white/30 skew-x-[-20deg] transform translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out pointer-events-none"></span>
+              </div>
+            </Link>
+          )}
         </div>
       </section>
       

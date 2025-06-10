@@ -22,7 +22,9 @@ const Orders: React.FC = () => {
 
   useEffect(() => {
     const fetchOrders = async () => {
-      if (!user) return;
+      if (!user) {
+        return;
+      }
       
       try {
         setLoading(true);
@@ -95,13 +97,16 @@ const Orders: React.FC = () => {
           title="My Orders"
           subtitle="View and track your order history"
         />
-        <Link 
-          to="/dashboard" 
-          className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
-        >
-          <ArrowLeft size={18} className="mr-2" />
-          <span>Back to Dashboard</span>
-        </Link>
+        <div className="relative inline-block overflow-hidden group rounded-md"> {/* Shine effect wrapper */}
+          <Link 
+            to="/dashboard" 
+            className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
+          >
+            <ArrowLeft size={18} className="mr-2" />
+            <span>Back to Dashboard</span>
+          </Link>
+          <span className="absolute top-0 right-0 w-12 h-full bg-white/20 skew-x-[-20deg] transform translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out pointer-events-none"></span>
+        </div>
       </div>
       
       {loading ? (
@@ -112,12 +117,15 @@ const Orders: React.FC = () => {
       ) : error ? (
         <div className="text-center py-16">
           <p className="text-red-500 text-lg">{error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="mt-4 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
-          >
-            Try again
-          </button>
+          <div className="relative inline-block overflow-hidden group rounded-md mt-4"> {/* Shine effect wrapper, mt-4 moved here */}
+            <button 
+              onClick={() => window.location.reload()} // This will trigger fetchOrders again
+              className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
+            >
+              Try Again
+            </button>
+            <span className="absolute top-0 right-0 w-12 h-full bg-white/20 skew-x-[-20deg] transform translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out pointer-events-none"></span>
+          </div>
         </div>
       ) : orders.length === 0 ? (
         <div className="text-center py-16">
@@ -230,9 +238,10 @@ const Orders: React.FC = () => {
                   </div>
                   
                   <div className="mt-6 flex justify-end">
-                    <button 
-                      className="flex items-center text-primary-600 hover:text-primary-800 px-4 py-2 border border-primary-600 rounded-md hover:bg-primary-50 transition-colors"
-                      onClick={() => {
+                    <div className="relative inline-block overflow-hidden group rounded-md"> {/* Shine effect wrapper */}
+                      <button 
+                        className="flex items-center text-primary-600 hover:text-primary-800 px-4 py-2 border border-primary-600 rounded-md hover:bg-primary-50 transition-colors"
+                        onClick={() => {
                         try {
                           downloadInvoice(order._id);
                           toast.success('Invoice download started');
@@ -244,7 +253,9 @@ const Orders: React.FC = () => {
                     >
                       <ExternalLink size={16} className="mr-1" />
                       <span>Download Invoice</span>
-                    </button>
+                      </button>
+                      <span className="absolute top-0 right-0 w-12 h-full bg-primary-600/10 skew-x-[-20deg] transform translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out pointer-events-none"></span>
+                    </div>
                   </div>
                 </CardBody>
               )}

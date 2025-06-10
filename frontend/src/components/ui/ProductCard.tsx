@@ -42,14 +42,17 @@ const ProductCard: React.FC<ProductCardProps> = ({
         <p className="text-sm text-gray-600 mb-4 flex-grow">{product.description}</p>
         
         {showAddToCart && (
-          <Button 
-            variant="primary" 
-            onClick={() => addToCart(product)}
-            className="mt-auto"
-          >
-            <ShoppingBag size={16} className="mr-2" />
-            Add to Cart
-          </Button>
+          <div className="relative mt-auto group rounded-lg overflow-hidden"> {/* Shine effect wrapper, mt-auto moved here */}
+            <Button 
+              variant="primary" 
+              onClick={() => addToCart(product)}
+              fullWidth /* Ensure button fills the wrapper for consistent effect */
+            >
+              <ShoppingBag size={16} className="mr-2" />
+              Add to Cart
+            </Button>
+            <span className="absolute top-0 right-0 w-12 h-full bg-white/20 skew-x-[-20deg] transform translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out pointer-events-none"></span>
+          </div>
         )}
       </div>
     </Card>

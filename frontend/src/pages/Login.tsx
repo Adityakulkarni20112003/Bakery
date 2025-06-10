@@ -78,10 +78,10 @@ const Login: React.FC = () => {
         password: signupPassword,
       });
       
-      const data = response.data;
+      const { success, message } = response.data;
       
-      if (!data.success) {
-        throw new Error(data.message || 'Registration failed');
+      if (!success) {
+        throw new Error(message || 'Registration failed');
       }
       
       // Show success message
@@ -219,14 +219,17 @@ const Login: React.FC = () => {
               </div>
               
               <div>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  fullWidth
-                  loading={isSubmitting}
-                >
-                  {loginType === 'admin' ? 'Sign In as Admin' : 'Sign In'}
-                </Button>
+                <div className="relative group rounded-lg overflow-hidden"> {/* Shine effect wrapper */}
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    fullWidth
+                    loading={isSubmitting}
+                  >
+                    {loginType === 'admin' ? 'Sign In as Admin' : 'Sign In'}
+                  </Button>
+                  <span className="absolute top-0 right-0 w-12 h-full bg-white/20 skew-x-[-20deg] transform translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out pointer-events-none"></span>
+                </div>
               </div>
             </form>
             
@@ -343,14 +346,17 @@ const Login: React.FC = () => {
               </div>
               
               <div>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  fullWidth
-                  loading={isSignupSubmitting}
-                >
-                  Create Account
-                </Button>
+                <div className="relative group rounded-lg overflow-hidden"> {/* Shine effect wrapper */}
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    fullWidth
+                    loading={isSignupSubmitting}
+                  >
+                    Create Account
+                  </Button>
+                  <span className="absolute top-0 right-0 w-12 h-full bg-white/20 skew-x-[-20deg] transform translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out pointer-events-none"></span>
+                </div>
               </div>
             </form>
             
