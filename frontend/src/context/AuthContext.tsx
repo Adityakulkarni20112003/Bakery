@@ -221,22 +221,34 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // Store token
       const token = data.token;
       localStorage.setItem('token', token);
+      
+      // Verify token contains admin flag
+      try {
+        const decoded: any = jwtDecode(token);
+        if (!decoded.isAdmin) {
+          throw new Error('Invalid admin token');
+        }
+        console.log('AdminLogin - Token verified with admin privileges');
+      } catch (err) {
+        console.error('Token verification failed:', err);
+        throw new Error('Invalid admin token');
+      }
+      
+      // Set admin status and user data
+      setIsAdmin(true);
       localStorage.setItem('isAdmin', 'true');
-      console.log('AdminLogin - Token and isAdmin stored in localStorage');
       
       // Set axios default header for future requests
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       
-      // Create admin user object - Admin doesn't need cart functionality
-      const userData: User = {
-        id: 'admin', // Admin ID is 'admin'
+      // Use the user data from the response
+      const userData: User = data.user || {
+        id: 'admin',
         name: 'Admin',
         email: email,
         avatar: 'https://images.pexels.com/photos/2381069/pexels-photo-2381069.jpeg?auto=compress&cs=tinysrgb&w=800'
       };
       
-      // Explicitly set admin status first
-      setIsAdmin(true);
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
       console.log('AdminLogin - Admin status set:', { isAdmin: true, user: userData });
@@ -247,6 +259,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setError(errorMessage);
       toast.error(errorMessage);
       console.error('Admin login error:', err);
+      
+      // Clear any partial admin data on error
+      setIsAdmin(false);
+      localStorage.removeItem('isAdmin');
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
     }
   };
 

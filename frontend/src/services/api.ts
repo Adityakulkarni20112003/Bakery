@@ -1,8 +1,11 @@
 import axios from 'axios';
 
+// Get the backend URL from environment variables or use a default
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
+
 // Create an axios instance with default config
 const api = axios.create({
-  baseURL: 'https://bakery-five-nu.vercel.app/api',
+  baseURL: `${BACKEND_URL}/api`,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -16,13 +19,22 @@ api.interceptors.request.use(
     
     // If token exists, add it to the request headers
     if (token) {
-      // The backend expects the token in a header named 'token'
-      config.headers.token = token;
+      // Use Authorization header with Bearer scheme
+      config.headers.Authorization = `Bearer ${token}`;
     }
     
     return config;
   },
   (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Add a response interceptor to handle errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error('API Error:', error.response?.data || error.message);
     return Promise.reject(error);
   }
 );

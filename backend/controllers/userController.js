@@ -3,10 +3,14 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import userModel from '../models/userModel.js';
 
-
-
 const createToken = (id) => {
-    return  jwt.sign({ id }, process.env.JWT_SECRET)
+    return jwt.sign(
+        { 
+            id,
+            exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24) // 24 hours
+        }, 
+        process.env.JWT_SECRET
+    );
 }
 
 // Route for user login
@@ -16,31 +20,32 @@ const loginUser = async (req, res) => {
 
         const user = await userModel.findOne({email});
 
-
         if (!user) {
-            return res.json({success: false, message: "User doesn't exists"});
+            return res.status(401).json({success: false, message: "User doesn't exists"});
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
 
         if (isMatch) {
-
             const token = createToken(user._id);
-            res.json({success: true, token});
-       
-        }else{
-            res.json({success: false, message: "Invalid Credentials"});
+            // Return user data along with token
+            res.json({
+                success: true, 
+                token,
+                user: {
+                    id: user._id,
+                    name: user.name,
+                    email: user.email
+                }
+            });
+        } else {
+            res.status(401).json({success: false, message: "Invalid Credentials"});
         }
         
     } catch (error) {
-
-        console.log(error);
-        res.json({success: false, message: error.message});
-        
+        console.error('Login error:', error);
+        res.status(500).json({success: false, message: error.message});
     }
-
-
-
 }
 
 
@@ -91,26 +96,45 @@ const registerUser = async (req, res) => {
 }
 // Route for admin login
 const adminLogin = async (req, res) => {
-
     try {
-
         const { email, password } = req.body;
         if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
-            const token = jwt.sign(email+password, process.env.JWT_SECRET);
-            res.json({success: true, token});
-        }else {
-            res.json({success: false, message: "Invalid Credentials"});
+            // Create token with admin flag
+            const token = jwt.sign(
+                { 
+                    id: 'admin',
+                    isAdmin: true,
+                    email: email,
+                    exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24) // 24 hours
+                }, 
+                process.env.JWT_SECRET
+            );
+            
+            // Return success with token and admin status
+            res.json({
+                success: true, 
+                token,
+                isAdmin: true,
+                user: {
+                    id: 'admin',
+                    name: 'Admin',
+                    email: email
+                }
+            });
+        } else {
+            res.status(401).json({
+                success: false, 
+                message: "Invalid admin credentials"
+            });
         }
-        
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: error.message });
-        
+        console.error('Admin login error:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Server error during admin login" 
+        });
     }
-
-
-
-}
+};
 
 // Find user by email (for cart functionality)
 const findUserByEmail = async (req, res) => {
@@ -142,7 +166,8 @@ const findUserByEmail = async (req, res) => {
         res.json({success: false, message: error.message});
     }
 };
-// Get current user (for token verification)
+
+// Get current user (for token verification)
 const getCurrentUser = async (req, res) => {
     try {
         // The auth middleware already verified the token and attached the user

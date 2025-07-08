@@ -25,44 +25,100 @@ const placedOrder = async (req, res) => {
         
         const { items, amount, address, paymentMethod, payment } = req.body;
         
-        console.log('User object:', user);
-        console.log('Placing order for user ID:', userId);
-        console.log('User ID type:', typeof userId);
+        console.log('Order request body:', JSON.stringify(req.body, null, 2));
+        console.log('User object:', JSON.stringify(user, null, 2));
         
         // Validate required fields
         if (!items || !amount || !address) {
             return res.status(400).json({ 
                 success: false, 
-                message: "Missing required fields for order placement" 
+                message: "Missing required fields for order placement",
+                details: {
+                    items: !items,
+                    amount: !amount,
+                    address: !address
+                }
             });
         }
 
-        // Create order data with the payment method from request (default to COD if not provided)
+        // Validate items array
+        if (!Array.isArray(items) || items.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Items must be a non-empty array"
+            });
+        }
+
+        // Validate address fields
+        const requiredAddressFields = ['street', 'city', 'state', 'postalCode', 'country'];
+        const missingAddressFields = requiredAddressFields.filter(field => !address[field]);
+        if (missingAddressFields.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Missing required address fields",
+                details: missingAddressFields
+            });
+        }
+
+        // Create order data
         const orderData = {
-            userId,
-            items,
-            address,
-            amount,
+            userId: userId.toString(), // Ensure userId is a string
+            items: items.map(item => ({
+                productId: item.productId.toString(), // Ensure productId is a string
+                quantity: Number(item.quantity),
+                price: Number(item.price)
+            })),
+            amount: Number(amount),
+            address: {
+                street: address.street,
+                city: address.city,
+                state: address.state,
+                postalCode: address.postalCode,
+                country: address.country
+            },
             paymentMethod: paymentMethod || "COD",
-            payment: payment !== undefined ? payment : false,
-            date: Date.now()
+            payment: payment !== undefined ? Boolean(payment) : false,
+            date: Date.now(),
+            status: 'Order Placed'
         };
 
+        console.log('Creating order with data:', JSON.stringify(orderData, null, 2));
+
         const newOrder = new orderModel(orderData);
-        await newOrder.save();
+        
+        // Validate order data against schema
+        const validationError = newOrder.validateSync();
+        if (validationError) {
+            console.error('Order validation error:', validationError);
+            return res.status(400).json({
+                success: false,
+                message: "Order validation failed",
+                errors: validationError.errors
+            });
+        }
+
+        // Save the order
+        const savedOrder = await newOrder.save();
+        console.log('Order saved successfully:', savedOrder._id);
 
         // Clear the user's cart after successful order
         await userModel.findByIdAndUpdate(userId, { cartData: {} });
 
         // Return the order ID along with success message
-        res.json({ 
+        res.status(201).json({ 
             success: true, 
             message: "Order Placed Successfully",
-            orderId: newOrder._id 
+            orderId: savedOrder._id 
         });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: error.message });
+        console.error('Error placing order:', error);
+        // Send a more specific error message if available
+        const errorMessage = error.message || "Failed to place order. Please try again.";
+        res.status(500).json({ 
+            success: false, 
+            message: errorMessage,
+            error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
     }
 };
 

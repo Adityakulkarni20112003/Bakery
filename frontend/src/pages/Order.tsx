@@ -65,27 +65,37 @@ const Order: React.FC = () => {
     const taxRate = 0.07; // 7% tax
     const totalAmount = totalPrice + shippingCost + (totalPrice * taxRate);
     
-    // The user ID will be extracted from the JWT token on the backend
-    // This prevents "Cast to ObjectId failed" errors as mentioned in the memory
-    console.log('Placing order as authenticated user');
+    // Validate address fields
+    if (!formData.address.street || !formData.address.city || !formData.address.state || !formData.address.postalCode || !formData.address.country) {
+      toast.error('Please fill in all address fields');
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Validate items
+    if (!items.length) {
+      toast.error('Your cart is empty');
+      setIsSubmitting(false);
+      return;
+    }
     
     // Prepare order data according to the backend schema
     const orderData = {
-      items: items.map(item => {
-        // Ensure we're using MongoDB _id if available
-        const productId = item.product._id || item.product.id;
-        console.log(`Product ID for ${item.product.name}:`, productId);
-        
-        return {
-          productId: productId,
-          quantity: item.quantity,
-          price: item.product.price
-        };
-      }),
+      items: items.map(item => ({
+        productId: item.product._id || item.product.id,
+        quantity: item.quantity,
+        price: item.product.price
+      })),
       amount: totalAmount,
-      address: formData.address,
+      address: {
+        street: formData.address.street,
+        city: formData.address.city,
+        state: formData.address.state,
+        postalCode: formData.address.postalCode,
+        country: formData.address.country
+      },
       paymentMethod: formData.paymentMethod,
-      payment: formData.paymentMethod === 'cod' ? false : true, // Only COD is not paid immediately
+      payment: formData.paymentMethod === 'COD' ? false : true,
       date: Date.now()
     };
     
@@ -283,7 +293,7 @@ const Order: React.FC = () => {
                           <option value="paypal">PayPal</option>
                           <option value="upi">UPI</option>
                           <option value="net_banking">Net Banking</option>
-                          <option value="cod">Cash on Delivery</option>
+                          <option value="COD">Cash on Delivery</option>
                         </select>
                       </div>
 
