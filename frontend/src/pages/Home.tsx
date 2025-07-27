@@ -14,7 +14,7 @@ const Home: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth(); // PLEASE VERIFY: Assuming 'user' object presence indicates logged-in state
+  const { user, isAuthenticated } = useAuth(); // Get both user object and authentication status
   
   // Fetch products from the backend when component mounts
   useEffect(() => {
@@ -59,11 +59,13 @@ const Home: React.FC = () => {
                 </Button>
                 <span className="absolute top-0 right-0 w-12 h-full bg-white/10 skew-x-[-20deg] transform translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out pointer-events-none"></span>
               </div>
-              <Link to="/login">
-                <Button variant="outline" size="lg" className="bg-transparent border-white text-white hover:bg-white hover:text-primary-600">
-                  Sign In to Order
-                </Button>
-              </Link>
+              {!isAuthenticated && (
+                <Link to="/login">
+                  <Button variant="outline" size="lg" className="bg-transparent border-white text-white hover:bg-white hover:text-primary-600">
+                    Sign In to Order
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -159,7 +161,7 @@ const Home: React.FC = () => {
           <p className="text-primary-100 mb-8 max-w-3xl mx-auto">
             Sign up for an account to place orders, save your favorites, and access our AI recipe generator.
           </p>
-          {!user && (
+          {!isAuthenticated && (
             <Link to="/login" className="inline-block"> {/* Ensure inline-block for text-center to work */}
               <div className="relative inline-block overflow-hidden group rounded-lg"> {/* Shine effect wrapper */}
                 <Button 

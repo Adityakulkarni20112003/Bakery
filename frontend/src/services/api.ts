@@ -9,6 +9,8 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Include credentials in cross-origin requests
+  timeout: 15000, // 15 second timeout
 });
 
 // Add a request interceptor to include the auth token in all requests
@@ -34,7 +36,35 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error('API Error:', error.response?.data || error.message);
+    // Log detailed error information for debugging
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('API Error Response:', {
+        status: error.response.status,
+        data: error.response.data,
+        headers: error.response.headers
+      });
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('API Error Request:', error.request);
+      console.error('No response received from server');
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('API Error Setup:', error.message);
+    }
+    
+    // Log config for debugging connection issues
+    if (error.config) {
+      console.error('API Request Config:', {
+        url: error.config.url,
+        method: error.config.method,
+        baseURL: error.config.baseURL,
+        timeout: error.config.timeout,
+        withCredentials: error.config.withCredentials
+      });
+    }
+    
     return Promise.reject(error);
   }
 );

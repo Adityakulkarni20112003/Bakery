@@ -22,7 +22,10 @@ connectDB();
 connectCloudinary();
 
 //Middleware
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost:4173', 'http://localhost:5174'], // Vite dev server and preview server
+  credentials: true
+}));
 app.use(express.json());
 
 //Routes

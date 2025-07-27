@@ -134,11 +134,41 @@ const addProduct = async (req, res) => {
 // List Products
 const listProducts = async (_req, res) => {
   try {
+    console.log('Fetching products from database...');
     const products = await productModel.find().sort({ createdAt: -1 });
+    console.log(`Successfully retrieved ${products.length} products`);
+    
+    // Send successful response
     res.json({ success: true, products });
   } catch (err) {
-    console.error('listProducts ➜', err);
-    res.status(500).json({ success: false, message: err.message });
+    // Log detailed error information
+    console.error('Error in listProducts:', err);
+    
+    // Check for specific error types
+    if (err.name === 'MongoServerError') {
+      console.error('MongoDB server error:', err.code);
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database server error. Please try again later.',
+        error: process.env.NODE_ENV === 'development' ? err.message : undefined
+      });
+    }
+    
+    if (err.name === 'MongooseError') {
+      console.error('Mongoose error:', err.message);
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Database connection error. Please try again later.',
+        error: process.env.NODE_ENV === 'development' ? err.message : undefined
+      });
+    }
+    
+    // Generic error response
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to retrieve products. Please try again later.',
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
   }
 };
 

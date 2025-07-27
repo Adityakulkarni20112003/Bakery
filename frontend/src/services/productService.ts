@@ -35,7 +35,19 @@ export const productService = {
       return mappedProducts;
     } catch (error) {
       console.error('Error fetching products:', error);
-      throw error;
+      
+      // Provide more specific error messages based on the error type
+      if (error.code === 'ECONNABORTED') {
+        throw new Error('Connection timeout. Please check your internet connection and try again.');
+      } else if (error.message === 'Network Error') {
+        throw new Error('Network error. Please check your internet connection and try again.');
+      } else if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        throw new Error(`Server error: ${error.response.data.message || 'Unknown error'}`);
+      } else {
+        throw error;
+      }
     }
   },
 

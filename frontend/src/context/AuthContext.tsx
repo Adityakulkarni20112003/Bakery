@@ -123,8 +123,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       setError(null);
       
-      const response = await axios.post(`${normalizedBackendUrl}/api/users/login`, { email, password });
+      // Log the request URL for debugging
+      console.log(`Attempting login to: ${normalizedBackendUrl}/api/users/login`);
+      
+      const response = await axios.post(`${normalizedBackendUrl}/api/users/login`, { email, password }, {
+        withCredentials: true, // Ensure credentials are included
+        timeout: 10000 // Set a reasonable timeout (10 seconds)
+      });
+      
       const data = response.data;
+      console.log('Login response:', data);
       
       if (!data.success) {
         throw new Error(data.message || 'Login failed');
@@ -198,9 +206,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       toast.success('Login successful!');
       
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || err.message || 'Login failed';
-      setError(errorMessage);
-      toast.error(errorMessage);
+      console.error('Login error details:', err);
+      
+      // Handle network errors specifically
+      if (err.code === 'ECONNABORTED') {
+        setError('Connection timeout. Please try again.');
+        toast.error('Connection timeout. Please try again.');
+      } else if (!err.response) {
+        setError('Network error. Please check your internet connection or the server might be down.');
+        toast.error('Network error. Please check your internet connection.');
+      } else {
+        const errorMessage = err.response?.data?.message || err.message || 'Login failed';
+        setError(errorMessage);
+        toast.error(errorMessage);
+      }
       console.error('Login error:', err);
     }
   };
@@ -210,7 +229,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setError(null);
       console.log('AdminLogin - Attempting admin login with:', { email });
       
-      const response = await axios.post(`${normalizedBackendUrl}/api/users/admin`, { email, password });
+      const response = await axios.post(`${normalizedBackendUrl}/api/users/admin`, { email, password }, {
+        withCredentials: true, // Ensure credentials are included
+        timeout: 10000 // Set a reasonable timeout (10 seconds)
+      });
+      
       const data = response.data;
       console.log('AdminLogin - Server response:', data);
       
@@ -255,9 +278,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       toast.success('Admin login successful!');
       
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || err.message || 'Admin login failed';
-      setError(errorMessage);
-      toast.error(errorMessage);
+      console.error('Admin login error details:', err);
+      
+      // Handle network errors specifically
+      if (err.code === 'ECONNABORTED') {
+        setError('Connection timeout. Please try again.');
+        toast.error('Connection timeout. Please try again.');
+      } else if (!err.response) {
+        setError('Network error. Please check your internet connection or the server might be down.');
+        toast.error('Network error. Please check your internet connection.');
+      } else {
+        const errorMessage = err.response?.data?.message || err.message || 'Admin login failed';
+        setError(errorMessage);
+        toast.error(errorMessage);
+      }
+      
       console.error('Admin login error:', err);
       
       // Clear any partial admin data on error

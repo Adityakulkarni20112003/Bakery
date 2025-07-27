@@ -36,12 +36,14 @@ const Products: React.FC = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
+        setError(null); // Clear any previous errors
+        console.log('Fetching products from:', import.meta.env.VITE_BACKEND_URL);
         const data = await productService.getProducts();
         setAllProducts(data);
-        setError(null);
       } catch (err) {
         console.error('Failed to fetch products:', err);
-        setError('Failed to load products. Please try again later.');
+        // Display the specific error message from productService
+        setError(err instanceof Error ? err.message : 'Failed to load products. Please try again later.');
       } finally {
         setLoading(false);
       }

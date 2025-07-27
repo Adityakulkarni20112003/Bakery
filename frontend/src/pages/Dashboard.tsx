@@ -105,7 +105,7 @@ const Dashboard: React.FC = () => {
             </div>
             <div>
               <p className="text-gray-500 text-sm">Favorites</p>
-              <p className="text-2xl font-bold text-gray-800">8</p>
+              <p className="text-2xl font-bold text-gray-800">0</p>
             </div>
           </CardBody>
         </Card>
@@ -117,7 +117,7 @@ const Dashboard: React.FC = () => {
             </div>
             <div>
               <p className="text-gray-500 text-sm">Points Earned</p>
-              <p className="text-2xl font-bold text-gray-800">350</p>
+              <p className="text-2xl font-bold text-gray-800">0</p>
             </div>
           </CardBody>
         </Card>

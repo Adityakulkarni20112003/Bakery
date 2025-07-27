@@ -36,15 +36,18 @@ const Login: React.FC = () => {
     
     try {
       if (loginType === 'admin') {
-        console.log('Attempting admin login with:', { email, password });
+        console.log('Attempting admin login with:', { email });
         await adminLogin(email, password);
         console.log('Admin login successful, navigating to /admin');
         navigate('/admin');
       } else {
+        console.log('Attempting user login with:', { email });
         await login(email, password);
-        navigate('/dashboard');
+        console.log('User login successful, navigating to home page');
+        navigate('/');
       }
-    } catch (err) {
+    } catch (err: any) {
+      // Error handling is now done in the AuthContext
       console.error(`${loginType === 'admin' ? 'Admin' : 'User'} login failed:`, err);
     } finally {
       setIsSubmitting(false);
@@ -71,13 +74,18 @@ const Login: React.FC = () => {
     }
     
     try {
-      // Call signup API using api service
+      console.log('Attempting to register user:', { name: signupName, email: signupEmail });
+      
+      // Call signup API using api service with timeout
       const response = await api.post('/users/register', {
         name: signupName,
         email: signupEmail,
         password: signupPassword,
+      }, {
+        timeout: 10000 // 10 second timeout
       });
       
+      console.log('Registration response:', response.data);
       const { success, message } = response.data;
       
       if (!success) {
@@ -94,9 +102,21 @@ const Login: React.FC = () => {
       setPassword('');
       
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || err.message || 'Registration failed';
-      setSignupError(errorMessage);
-      toast.error(errorMessage);
+      console.error('Signup error details:', err);
+      
+      // Handle network errors specifically
+      if (err.code === 'ECONNABORTED') {
+        setSignupError('Connection timeout. Please try again.');
+        toast.error('Connection timeout. Please try again.');
+      } else if (!err.response) {
+        setSignupError('Network error. Please check your internet connection or the server might be down.');
+        toast.error('Network error. Please check your internet connection.');
+      } else {
+        const errorMessage = err.response?.data?.message || err.message || 'Registration failed';
+        setSignupError(errorMessage);
+        toast.error(errorMessage);
+      }
+      
       console.error('Signup failed:', err);
     } finally {
       setIsSignupSubmitting(false);
